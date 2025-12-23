@@ -214,5 +214,10 @@ meeting-management-system/
 ```
 ## 📊 Dashboard Preview
 ![recommendations Dashboard](images/recommendations.png)
+
+---
+
 ![Overview Dashboard](images/Overview.png)
+
+
 ---
