@@ -79,7 +79,7 @@ This system transforms how you manage meetings by automating the entire workflow
     - Sender role and urgency
 
 
-### Dashboard Navigation
+### Dashboard
 
 - **🏠 Overview**: High-level metrics and urgent meetings
 - **🔥 Urgent Meetings**: Focus on this week's urgent meetings
