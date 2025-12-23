@@ -639,10 +639,8 @@ elif view_option == "✅ Recommendations":
                 f"📁 **{project}** - {completed_count}/{total_count} tasks completed | {len(project_advices)} advices",
                 expanded=(selected_project != "All Projects")
             ):
-                # Get meeting info from the first recommendation's linked meeting
                 meeting_info = project_recs.iloc[0]
                 
-                # Get proper meeting details - now from the joined data
                 meeting_date = meeting_info['meeting_date'] if pd.notna(meeting_info['meeting_date']) else 'Date not set'
                 meeting_time = meeting_info['meeting_time'] if pd.notna(meeting_info['meeting_time']) else ''
                 meeting_topic = meeting_info['meeting_topic'] if pd.notna(meeting_info['meeting_topic']) else 'No topic'
@@ -757,3 +755,4 @@ elif view_option == "📈 Analytics":
         else:
 
             st.info("No duration data available")
+
