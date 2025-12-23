@@ -213,6 +213,6 @@ meeting-management-system/
 └── LICENSE                         # MIT License
 ```
 ## 📊 Dashboard Preview
-![recommendations Dashboard](images/recommendations.PNG)
-![Overview Dashboard](images/Overview.PNG)
+![recommendations Dashboard](images/recommendations.png)
+![Overview Dashboard](images/Overview.png)
 ---
