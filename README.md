@@ -78,39 +78,15 @@ This system transforms how you manage meetings by automating the entire workflow
     - Previous meeting decisions
     - Sender role and urgency
 
-### 📊 Dashboard Features
 
-- **Overview Dashboard**
-  - Total meetings and completion metrics
-  - Urgent meetings this week
-  - Meeting trends and analytics
-  - Service and relation type distribution
+### Dashboard Navigation
 
-- **Urgent Meetings View**
-  - Filtered view of urgent meetings
-  - Quick access to tasks and advice
-  - Interactive task completion tracking
-
-- **Recommendations Management**
-  - Project-grouped task organization
-  - Progress tracking per project
-  - Advice repository
-  - Completion rate visualization
-
-- **Relationship Intelligence**
-  - Contact directory with full context
-  - Company and service analytics
-  - Relation type distribution
-  - Historical decision tracking
-
-- **Advanced Analytics**
-  - Meeting distribution heatmaps
-  - Project engagement metrics
-  - Average duration by service
-  - Custom date range filtering
-
+- **🏠 Overview**: High-level metrics and urgent meetings
+- **🔥 Urgent Meetings**: Focus on this week's urgent meetings
+- **📅 All Meetings**: Searchable meeting list
+- **👥 Relationships**: Contact directory and analytics
+- **✅ Recommendations**: Task and advice management
 ---
-
 ## 🏗️ Architecture
 
 ### System Architecture
@@ -236,13 +212,5 @@ meeting-management-system/
 ├── README.md                       # This file
 └── LICENSE                         # MIT License
 ```
-
-### Dashboard Navigation
-
-- **🏠 Overview**: High-level metrics and urgent meetings
-- **🔥 Urgent Meetings**: Focus on this week's urgent meetings
-- **📅 All Meetings**: Searchable meeting list
-- **👥 Relationships**: Contact directory and analytics
-- **✅ Recommendations**: Task and advice management
 
 ---
