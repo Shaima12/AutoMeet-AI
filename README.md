@@ -212,5 +212,9 @@ meeting-management-system/
 ├── README.md                       # This file
 └── LICENSE                         # MIT License
 ```
+## 📊 Dashboard Preview
+
+(images/recommendations.PNG)
+(images/Overview.PNG)
 
 ---
