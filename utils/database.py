@@ -1,15 +1,6 @@
 from datetime import datetime
 from sqlalchemy import create_engine, text
 
-def setup_database():
-    """Setup database connection to Supabase"""
-    DATABASE_URL = (
-        "postgresql+psycopg2://"
-        "postgres.jyklspgdmztzcuwvqyom:"
-        "sCezA1B7m2jrekxA"
-        "@aws-1-eu-central-2.pooler.supabase.com:6543/postgres"
-    )
-
     engine = create_engine(
         DATABASE_URL,
         pool_pre_ping=True,
@@ -37,4 +28,5 @@ def store_email(engine, email):
         email_id = result.fetchone()[0]
 
     print(f"💾 Stored email ID {email_id}")
+
     return email_id
