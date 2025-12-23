@@ -1,3 +1,4 @@
+
 import os
 import signal
 import json
@@ -27,6 +28,7 @@ from dotenv import load_dotenv
 from crewai import Task, Crew, Process, LLM
 
 from agents.email_parser_agent import create_email_parser_agent
+from agents.advisor_agent import create_advisor_agent  # NEW IMPORT
 from agents.calendar_agent import create_calendar_agent
 from utils.gmail_setup import setup_gmail, fetch_one_email
 from utils.database import setup_database, store_email
@@ -67,10 +69,10 @@ def process_incoming_email():
     }
 
 def run_orchestration():
-    """Main orchestration: Email Parser -> Calendar Agent"""
+    """Main orchestration: Email Parser -> Advisor -> Calendar Agent"""
     
     print("\n" + "="*70)
-    print("STARTING EMAIL-TO-CALENDAR ORCHESTRATION")
+    print("STARTING EMAIL-TO-CALENDAR ORCHESTRATION WITH ADVISOR")
     print("="*70 + "\n")
     
     # Step 1: Fetch incoming email
@@ -95,13 +97,12 @@ def run_orchestration():
         )
 
     llm = get_llm()
-    print("✅ LLM ready")
     print("✅ LLM initialized\n")
     
     # Create agents
     email_parser_agent = create_email_parser_agent(llm)
+    advisor_agent = create_advisor_agent(llm)  # NEW AGENT
     
-    # Agent normal pour tasks 2 et 3
     calendar_agent = create_calendar_agent(
         token_file="token.json",
         email_config=EMAIL_CONFIG,
@@ -109,7 +110,6 @@ def run_orchestration():
         email_only=False
     )
     
-    # Agent spécial pour task 4 - SEULEMENT email
     email_sender_agent = create_calendar_agent(
         token_file="token.json",
         email_config=EMAIL_CONFIG,
@@ -119,7 +119,7 @@ def run_orchestration():
     
     print("✅ Agents created\n")
     
-    # TASK 1: Parse email and store structured data
+    # TASK 1: Parse email and store structured data (NO CHANGES)
     task1 = Task(
         description=f"""
 Parse and store email ID {email_data['email_id']}.
@@ -145,10 +145,46 @@ IMPORTANT: Return the complete parsed JSON object, not just a confirmation messa
         expected_output="Complete parsed JSON with meeting details"
     )
     
-    # TASK 2: Check availability
+    # TASK 2: Generate advice and tasks (NEW TASK)
     task2 = Task(
         description=f"""
-Look at the parsed meeting data from the previous task.
+Generate personalized advice and tasks for the upcoming meeting.
+
+Sender email: {email_data['sender_email']}
+
+Steps you MUST follow:
+1. Call fetch_person_context with sender_email: "{email_data['sender_email']}"
+   This will return person information including name, role, project details, etc.
+
+2. Look at the parsed email data from the previous task (task1)
+
+3. Call generate_advice with:
+   - parsed_email: the complete JSON from task1
+   - person_context: the data from step 1
+   
+   This will return a dict with 'tasks' (list of 5 items) and 'advice' (list of 5 items)
+
+4. Extract project_title from the parsed email JSON (from task1)
+
+5. Call store_advice with:
+   - email_id: {email_data['email_id']}
+   - project_title: [extracted from task1]
+   - tasks: [the tasks list from step 3]
+   - advice: [the advice list from step 3]
+
+6. Return: "ADVICE GENERATED AND STORED"
+
+IMPORTANT: Follow all steps in order. Use the exact tools mentioned.
+""",
+        agent=advisor_agent,
+        expected_output="'ADVICE GENERATED AND STORED'",
+        context=[task1]
+    )
+    
+    # TASK 3: Check availability (RENUMBERED, NO OTHER CHANGES)
+    task3 = Task(
+        description=f"""
+Look at the parsed meeting data from task 1.
 
 Extract these fields from the parsed data:
 - meeting_date (format: YYYY-MM-DD)
@@ -174,8 +210,8 @@ Return ONLY: "AVAILABLE" or "NOT AVAILABLE" based on the result.
         context=[task1]
     )
     
-    # TASK 3: Create event OR find alternatives
-    task3 = Task(
+    # TASK 4: Create event OR find alternatives (RENUMBERED, NO OTHER CHANGES)
+    task4 = Task(
         description=f"""
 Look at the previous task result and the parsed meeting data from task 1.
 
@@ -208,63 +244,46 @@ If availability check says "NOT AVAILABLE":
 """,
         agent=calendar_agent,
         expected_output="'EVENT CREATED' or 'ALTERNATIVES FOUND: [list]'",
-        context=[task1, task2]
+        context=[task1, task3]
     )
     
-    # TASK 4: Send email notification
-    task4 = Task(
+    # TASK 5: Send email notification (RENUMBERED, NO OTHER CHANGES)
+   # TASK 5: Send email notification (FIXED VERSION)
+    task5 = Task(
         description=f"""
-Look at the previous task result and the parsed meeting data from task 1.
+    The previous task said "EVENT CREATED" which means the meeting was successfully scheduled.
 
-Extract from parsed data:
-- project_title
-- meeting_topic
-- meeting_date
-- meeting_time
+    You MUST now send a confirmation email.
 
-If previous task says "EVENT CREATED":
-  Format the meeting time nicely (e.g., "Wednesday, December 20 at 10:00 AM - 11:00 AM")
-  
-  Use send_email with:
-  - recipient: {email_data['sender_email']}
-  - subject: ✅ Meeting Confirmed: [project_title]
-  - body:
-    Hello,
+    Use send_email tool with these EXACT parameters:
+    - recipient: {email_data['sender_email']}
+    - subject: ✅ Meeting Confirmed: Role-Based Weighting Discussion
+    - body: Hello,
 
-    Our meeting "[project_title]" has been successfully scheduled for:
-    [formatted_time]
+    Your meeting has been successfully scheduled for Monday, December 23, 2025 at 01:00 PM - 02:00 PM (Africa/Tunis timezone).
+
+    Topic: Introducing role-based weighting to improve decision quality
 
     Please let me know if you need any changes.
 
     Kind regards,
     Ichaoui Chaima
-  - meeting_details: Meeting: [project_title]\\nTime: [formatted_time]\\nDescription: [meeting_topic]
+    - meeting_details: Meeting: Role-Based Weighting Discussion
+    Time: Monday, December 23, 2025 at 01:00 PM - 02:00 PM
+    Description: Introducing role-based weighting to improve decision quality
 
-If previous task says "ALTERNATIVES FOUND":
-  Write a COMPLETE professional email that includes:
-  - A polite greeting (Hello Mr./Mrs.)
-  - An apology for the unavailability
-  - A clear list of alternative time slots from the previous task
-  - A request for confirmation
-  - A professional signature: "Ichaoui Chaima"
+    After calling send_email, return EXACTLY: "EMAIL SENT"
 
-  Then use send_email with:
-  - recipient: {email_data['sender_email']}
-  - subject: ⚠️ Meeting Reschedule Proposal – [project_title]
-  - body: The FULL email text you wrote
-  - meeting_details: Include the alternative slots nicely formatted
-
-Return "EMAIL SENT" when done.
-""",
+    DO NOT extract data. DO NOT analyze. JUST CALL send_email with the parameters above.
+    """,
         agent=email_sender_agent,
         expected_output="'EMAIL SENT'",
-        context=[task1, task2, task3]
-    )
-    
-    # Create unified crew with both agents
+        context=[task1, task3, task4]
+    ) 
+    # Create unified crew with ALL agents
     crew = Crew(
-        agents=[email_parser_agent, calendar_agent, email_sender_agent],
-        tasks=[task1, task2, task3, task4],
+        agents=[email_parser_agent, advisor_agent, calendar_agent, email_sender_agent],
+        tasks=[task1, task2, task3, task4, task5],  # NOW 5 TASKS
         process=Process.sequential,
         verbose=True
     )
@@ -276,7 +295,10 @@ Return "EMAIL SENT" when done.
     print("✅ ORCHESTRATION COMPLETED")
     print("="*70)
     print(f"\n{result}\n")
-    print("📬 Check email inbox and Google Calendar!")
+    print("📬 Check:")
+    print("  - Email inbox for confirmation")
+    print("  - Google Calendar for event")
+    print("  - Database 'recommendations' table for advice and tasks")
     print("="*70 + "\n")
     
     return result
