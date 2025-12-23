@@ -235,7 +235,6 @@ def parse_advisor_output(llm_output: str) -> dict:
     tasks = extract_section("TASKS")
     advice = extract_section("ADVICE")
     
-    # Ensure we have exactly 5 of each
     while len(tasks) < 5:
         tasks.append("Review meeting materials")
     while len(advice) < 5:
@@ -324,4 +323,5 @@ def create_advisor_agent(llm):
         max_iterations=15,
         verbose=True,
         allow_delegation=False
+
     )
