@@ -90,7 +90,7 @@ def run_orchestration():
     # Initialize LLM
     def get_llm():
         return LLM(
-            model="ollama/qwen2.5:14b",  # Better than llama3
+            model="ollama/qwen2.5:14b",  
             temperature=0.1,
             max_tokens=4000,
             provider="ollama"
@@ -101,7 +101,7 @@ def run_orchestration():
     
     # Create agents
     email_parser_agent = create_email_parser_agent(llm)
-    advisor_agent = create_advisor_agent(llm)  # NEW AGENT
+    advisor_agent = create_advisor_agent(llm)  
     
     calendar_agent = create_calendar_agent(
         token_file="token.json",
@@ -119,7 +119,7 @@ def run_orchestration():
     
     print("✅ Agents created\n")
     
-    # TASK 1: Parse email and store structured data (NO CHANGES)
+    # TASK 1: Parse email and store structured data
     task1 = Task(
         description=f"""
 Parse and store email ID {email_data['email_id']}.
@@ -145,7 +145,7 @@ IMPORTANT: Return the complete parsed JSON object, not just a confirmation messa
         expected_output="Complete parsed JSON with meeting details"
     )
     
-    # TASK 2: Generate advice and tasks (NEW TASK)
+    # TASK 2: Generate advice and tasks 
     task2 = Task(
         description=f"""
 Generate personalized advice and tasks for the upcoming meeting.
@@ -311,4 +311,5 @@ if __name__ == "__main__":
     
     print(f"\n✅ Email configured: {EMAIL_CONFIG['sender_email']}")
     
+
     result = run_orchestration()
