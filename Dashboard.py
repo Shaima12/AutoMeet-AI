@@ -16,13 +16,7 @@ st.set_page_config(
 
 # Database Connection
 @st.cache_resource
-def get_database_connection():
-    DATABASE_URL = (
-        "postgresql+psycopg2://"
-        "postgres.jyklspgdmztzcuwvqyom:"
-        "sCezA1B7m2jrekxA"
-        "@aws-1-eu-central-2.pooler.supabase.com:6543/postgres"
-    )
+
     engine = create_engine(
         DATABASE_URL,
         pool_pre_ping=True,
@@ -761,4 +755,5 @@ elif view_option == "📈 Analytics":
                          color='Avg Duration (min)', color_continuous_scale='Oranges')
             st.plotly_chart(fig, use_container_width=True)
         else:
+
             st.info("No duration data available")
